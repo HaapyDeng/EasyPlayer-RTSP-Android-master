@@ -91,9 +91,9 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     private ContentPlaylistBinding mBinding;
     private Cursor mCursor;
     private UpdateMgr update;
-    TextureView mSurfaceView;
-    ResultReceiver mResultReceiver;
-    EasyRTSPClient mStreamRender;
+    TextureView mSurfaceView, mSurfaceView2;
+    ResultReceiver mResultReceiver, mResultReceiver2;
+    EasyRTSPClient mStreamRender, mStreamRender2;
 
 
     public String wsUrl = "ws://101.201.28.83:86";
@@ -125,6 +125,12 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     String userGrade = "";
     String userClass = "";
     int flag = 0;
+
+    String video1 = "rtsp://admin:Abcd1234@172.18.31.242:554";
+    String video2 = "rtsp://admin:Abcd1234@172.18.31.241:554";
+
+//    String video1 = "rtsp://admin:Abcd1234@192.168.1.6:554";
+//    String video2 = "rtsp://admin:Abcd1234@192.168.1.4:554";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,7 +184,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                 f.mkdirs();
 
                 try {
-                    mStreamRender.start("rtsp://admin:Abcd1234@192.168.1.4:554", 0, RTSPClient.EASY_SDK_VIDEO_FRAME_FLAG | RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG, "", "", autoRecord ?
+                    mStreamRender.start(video1, 0, RTSPClient.EASY_SDK_VIDEO_FRAME_FLAG | RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG, "", "", autoRecord ?
                             new File(f, new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()) + ".mp4").getPath() : null);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -204,6 +210,77 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
             }
         });
 
+        //添加第二个播放器
+        mSurfaceView2 = (TextureView) findViewById(R.id.surface_view2);
+        mSurfaceView2.setOpaque(false);
+        mSurfaceView2.buildLayer();
+        mResultReceiver2 = new ResultReceiver(new Handler()) {
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                super.onReceiveResult(resultCode, resultData);
+                Activity activity = PlaylistActivity.this;
+                if (activity == null) return;
+                if (resultCode == EasyRTSPClient.RESULT_VIDEO_DISPLAYED) {
+
+                } else if (resultCode == EasyRTSPClient.RESULT_VIDEO_SIZE) {
+
+                } else if (resultCode == EasyRTSPClient.RESULT_TIMEOUT) {
+                    new AlertDialog.Builder(activity).setMessage("时间到").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
+                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_AUDIO) {
+                    new AlertDialog.Builder(activity).setMessage("音频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
+                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_VIDEO) {
+                    new AlertDialog.Builder(activity).setMessage("视频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
+                } else if (resultCode == EasyRTSPClient.RESULT_EVENT) {
+
+                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_BEGIN) {
+                    if (activity instanceof PlayActivity)
+                        ((PlayActivity) activity).onRecordState(1);
+                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_END) {
+                    if (activity instanceof PlayActivity)
+                        ((PlayActivity) activity).onRecordState(-1);
+                }
+            }
+        };
+        mSurfaceView2.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(SurfaceTexture surface, int i, int i1) {
+
+                mStreamRender2 = new EasyRTSPClient(PlaylistActivity.this, "79393674363536526D343041484339617064446A70655A76636D63755A57467A65575268636E64706269356C59584E356347786865575679567778576F502B6C34456468646D6C754A6B4A68596D397A595541794D4445325257467A65555268636E6470626C526C5957316C59584E35",
+                        new Surface(surface), mResultReceiver2);
+
+                boolean autoRecord = PreferenceManager.getDefaultSharedPreferences(PlaylistActivity.this).getBoolean("auto_record", false);
+
+                File f = new File(TheApp.sMoviePath);
+                f.mkdirs();
+
+                try {
+                    mStreamRender2.start(video2, 0, RTSPClient.EASY_SDK_VIDEO_FRAME_FLAG | RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG, "", "", autoRecord ?
+                            new File(f, new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()) + ".mp4").getPath() : null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(PlaylistActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    return;
+                }
+//                sendResult(RESULT_REND_STARTED, null);
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+
+            }
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+                return false;
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+
+            }
+        });
+
+
         //初始化保存noticeId
         SharedPreferences notice = getSharedPreferences("noticeId", MODE_PRIVATE);
         SharedPreferences.Editor edit = notice.edit(); //编辑文件
@@ -211,14 +288,14 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
         edit.putString("id", "0");
         edit.commit();  //保存数据信息
 
-
-        img1 = (ImageView) findViewById(R.id.img1);
-        name1 = (TextView) findViewById(R.id.name1);
-        grade1 = (TextView) findViewById(R.id.grade1);
-
-        img2 = (ImageView) findViewById(R.id.img2);
-        name2 = (TextView) findViewById(R.id.name2);
-        grade2 = (TextView) findViewById(R.id.grade2);
+//
+//        img1 = (ImageView) findViewById(R.id.img1);
+//        name1 = (TextView) findViewById(R.id.name1);
+//        grade1 = (TextView) findViewById(R.id.grade1);
+//
+//        img2 = (ImageView) findViewById(R.id.img2);
+//        name2 = (TextView) findViewById(R.id.name2);
+//        grade2 = (TextView) findViewById(R.id.grade2);
 
         //studentId
         SharedPreferences sId = getSharedPreferences("studentId", MODE_PRIVATE);
@@ -247,8 +324,8 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void initId() {
-        String url = "http://192.168.1.122:8080/";
-//        String url = "http://172.18.31.222:8080/";
+//        String url = "http://192.168.1.122:8080/";
+        String url = "http://172.18.31.222:8080/";
         com.loopj.android.http.AsyncHttpClient client = new com.loopj.android.http.AsyncHttpClient();
         client.get(url, new JsonHttpResponseHandler() {
 
@@ -260,7 +337,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                     Log.d("id", id.toString());
                     if (id.length() == 0) {
 //                        new InitIdTimeThread().start();
-                        mHandler.sendEmptyMessageDelayed(12, 5000);
+//                        mHandler.sendEmptyMessageDelayed(12, 5000);
                     } else {
                         SharedPreferences getSId = getSharedPreferences("studentId", 0);
                         String sid = getSId.getString("id", "0");
@@ -271,16 +348,20 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                                 //保存数据信息
                                 if (sid.equals(studentId)) {
 //                                    new InitIdTimeThread().start();
-                                    mHandler.sendEmptyMessageDelayed(12, 5000);
+//                                    mHandler.sendEmptyMessageDelayed(12, 5000);
                                 } else {
                                     tag = 1;
                                     SharedPreferences sId2 = getSharedPreferences("studentId", MODE_PRIVATE);
                                     SharedPreferences.Editor edit2 = sId2.edit(); //编辑文件
                                     edit2.putString("id", studentId);
                                     edit2.commit();
-                                    Toast.makeText(PlaylistActivity.this, studentId, Toast.LENGTH_LONG).show();
+//                                    Toast.makeText(PlaylistActivity.this, studentId, Toast.LENGTH_LONG).show();
+                                    Log.d("studentId", studentId);
                                     popView = LayoutInflater.from(PlaylistActivity.this).inflate(R.layout.popupview, null);
-                                    new popoWindThread().start();
+                                    Message msg = new Message();
+                                    msg.what = 7;
+                                    msg.obj = "1";
+                                    mHandler.sendMessage(msg);
 
                                 }
                                 break;
@@ -371,39 +452,6 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 //
                     popupWindowHelper.dismiss();
                     flag = flag + 1;
-                    switch (flag % 2) {
-                        case 1:
-                            LinearLayout ll_11 = (LinearLayout) findViewById(R.id.ll__11);
-                            ll_11.setVisibility(View.VISIBLE);
-                            if (userName.equals("校外人员")) {
-                                img1.setImageDrawable(getResources().getDrawable(R.drawable.img_moshengrenbiaoji));
-                                name1.setText(userName);
-                                grade1.setText("请勿擅自进入");
-                            } else {
-                                String sdDir2 = Environment.getExternalStorageDirectory().getPath();
-                                img1.setImageURI(Uri.fromFile(new File(sdDir2 + "/school/" + studentId + ".jpg")));
-                                name1.setText(userName);
-                                grade1.setText(userGrade + " · " + userClass);
-
-                            }
-                            break;
-                        case 0:
-                            LinearLayout ll_12 = (LinearLayout) findViewById(R.id.ll__12);
-                            ll_12.setVisibility(View.VISIBLE);
-                            if (userName.equals("校外人员")) {
-                                img2.setImageDrawable(getResources().getDrawable(R.drawable.img_moshengrenbiaoji));
-                                name2.setText(userName);
-                                grade2.setText("请勿擅自进入");
-                            } else {
-                                String sdDir2 = Environment.getExternalStorageDirectory().getPath();
-                                img2.setImageURI(Uri.fromFile(new File(sdDir2 + "/school/" + studentId + ".jpg")));
-                                name2.setText(userName);
-                                grade2.setText(userGrade + " · " + userClass);
-
-                            }
-                            break;
-                    }
-//
                     if (tag == 1) {
                         mHandler.sendEmptyMessageDelayed(12, 3000);
                     }
@@ -464,6 +512,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 
                     break;
                 case 8:
+                    Log.d("noticeContent", noticeContent + "dfdfdfd");
                     MarqureeTextView noticeText = (MarqureeTextView) findViewById(R.id.notice);
                     noticeText.setText(noticeContent);
                     break;
@@ -493,22 +542,22 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 
 
     //启动弹出窗口线程
-    public class popoWindThread extends Thread {
-        @Override
-        public void run() {
-            super.run();
-            try {
-                Thread.sleep(1000);
-                Message msg = new Message();
-                msg.what = 7;
-                msg.obj = "1";
-                mHandler.sendMessage(msg);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public class popoWindThread extends Thread {
+//        @Override
+//        public void run() {
+//            super.run();
+//            try {
+//                Thread.sleep(1000);
+//                Message msg = new Message();
+//                msg.what = 7;
+//                msg.obj = "1";
+//                mHandler.sendMessage(msg);
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
 
     public class TimeThread extends Thread {
@@ -637,11 +686,11 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                                 if (noticeObject.getInt("status") == 1) {
                                     JSONObject list = noticeObject.getJSONObject("list");
                                     if (list.getString("id").equals("" + id)) {
-                                        Log.d("noticeObject", "");
-                                        noticeContent = getId.getString("content", "0");
-                                        Message msg = new Message();
-                                        msg.what = 8;
-                                        mHandler.sendMessage(msg);
+//                                        Log.d("noticeObject", "");
+//                                        noticeContent = getId.getString("content", "0");
+//                                        Message msg = new Message();
+//                                        msg.what = 8;
+//                                        mHandler.sendEmptyMessageDelayed(8,2000);
                                     } else {
                                         noticeId = list.getString("id");
                                         noticeContent = list.getString("content");
@@ -657,14 +706,15 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                                         if (!noticeId.equals(id)) {
                                             Message msg = new Message();
                                             msg.what = 8;
-                                            mHandler.sendMessage(msg);
+                                            mHandler.sendEmptyMessageDelayed(8, 2000);
                                         }
                                     }
                                 } else {
                                     noticeContent = getId.getString("content", "0");
-                                    Message msg = new Message();
-                                    msg.what = 8;
-                                    mHandler.sendMessage(msg);
+//                                    Log.d("noticeContent", noticeContent + ":" + noticeId + ":" + id);
+//                                    Message msg = new Message();
+//                                    msg.what = 8;
+//                                    mHandler.sendEmptyMessageDelayed(8,2000);
                                 }
 
                             }
@@ -731,12 +781,6 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
         Log.d("生成的json串为:", jsonresult);
         return jsonresult;
     }
-
-
-
-
-
-
 
 
     @Override
