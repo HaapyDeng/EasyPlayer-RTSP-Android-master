@@ -96,7 +96,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     EasyRTSPClient mStreamRender, mStreamRender2;
 
 
-    public String wsUrl = "ws://101.201.28.83:86";
+    public String wsUrl = "ws://105.111.28.83:86";
     private LinearLayout customBarChart1, customBarChart2;
     int[] data1 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
