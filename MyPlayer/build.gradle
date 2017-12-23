@@ -67,7 +67,6 @@ dependencies {
 
     compile 'com.tencent.bugly:crashreport:2.6.5'
 
-
     compile 'com.koushikdutta.async:androidasync:2.+'
     compile 'com.loopj.android:android-async-http:1.4.9'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'

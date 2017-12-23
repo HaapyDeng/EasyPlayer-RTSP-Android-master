@@ -1,6 +1,11 @@
 <resources>
-    <string name="app_name">EasyPlayer</string>
     <string name="app_flavor">basic</string>
+
+    <string name="app_name">智慧考勤</string>
+    <string name="out_in_co">出入统计</string>
+    <string name="now_time_co">实时状态</string>
+    <string name="in">进入</string>
+    <string name="out">离开</string>
 
     <string name="title_activity_settings">Settings</string>
 
