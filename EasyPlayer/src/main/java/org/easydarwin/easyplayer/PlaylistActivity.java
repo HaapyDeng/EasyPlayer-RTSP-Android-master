@@ -64,7 +64,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -96,7 +100,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     EasyRTSPClient mStreamRender, mStreamRender2;
 
 
-    public String wsUrl = "ws://105.111.28.83:86";
+    public String wsUrl = "ws://101.201.28.83:86";
     private LinearLayout customBarChart1, customBarChart2;
     int[] data1 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -126,11 +130,14 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     String userClass = "";
     int flag = 0;
 
-    String video1 = "rtsp://admin:Abcd1234@172.18.31.242:554";
-    String video2 = "rtsp://admin:Abcd1234@172.18.31.241:554";
-
-//    String video1 = "rtsp://admin:Abcd1234@192.168.1.6:554";
+    //    String video1 = "rtsp://admin:Abcd1234@192.168.1.2:554";
+//    String video2 = "rtsp://admin:Abcd1234@192.168.1.3:554";
+//
+//    String video1 = "rtsp://admin:admin@192.168.1.6:554";
 //    String video2 = "rtsp://admin:Abcd1234@192.168.1.4:554";
+    String video1 = "";
+    String video2 = "";
+    String faceIp = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +145,33 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
         mBinding = DataBindingUtil.setContentView(this, R.layout.content_playlist);
 //        setContentView(R.layout.content_playlist);
 //        setSupportActionBar(mBinding.toolbar);
+
+        //读取配置文件里面的IP配置
+//        String sdDir = Environment.getExternalStorageDirectory().getPath();
+//        img_1.setImageURI(Uri.fromFile(new File(sdDir + "/school/" + studentId + ".jpg")));
+        File file = new File(Environment.getExternalStorageDirectory(), "/ipconfig/ipconfig.txt");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String readline = "";
+            StringBuffer sb = new StringBuffer();
+            while ((readline = br.readLine()) != null) {
+                System.out.println("readline:" + readline);
+                sb.append(readline);
+            }
+            br.close();
+            System.out.println("读取成功：" + sb.toString());
+            JSONObject object = new JSONObject(sb.toString());
+            video1 = object.getString("video1");
+//            video2 = object.getString("video2");
+            faceIp = object.getString("ip");
+//            System.out.println("video:" + video1 + ":" + video2);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
 
         //加个播放器
@@ -209,76 +243,76 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 
             }
         });
-
-        //添加第二个播放器
-        mSurfaceView2 = (TextureView) findViewById(R.id.surface_view2);
-        mSurfaceView2.setOpaque(false);
-        mSurfaceView2.buildLayer();
-        mResultReceiver2 = new ResultReceiver(new Handler()) {
-            @Override
-            protected void onReceiveResult(int resultCode, Bundle resultData) {
-                super.onReceiveResult(resultCode, resultData);
-                Activity activity = PlaylistActivity.this;
-                if (activity == null) return;
-                if (resultCode == EasyRTSPClient.RESULT_VIDEO_DISPLAYED) {
-
-                } else if (resultCode == EasyRTSPClient.RESULT_VIDEO_SIZE) {
-
-                } else if (resultCode == EasyRTSPClient.RESULT_TIMEOUT) {
-                    new AlertDialog.Builder(activity).setMessage("时间到").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
-                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_AUDIO) {
-                    new AlertDialog.Builder(activity).setMessage("音频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
-                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_VIDEO) {
-                    new AlertDialog.Builder(activity).setMessage("视频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
-                } else if (resultCode == EasyRTSPClient.RESULT_EVENT) {
-
-                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_BEGIN) {
-                    if (activity instanceof PlayActivity)
-                        ((PlayActivity) activity).onRecordState(1);
-                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_END) {
-                    if (activity instanceof PlayActivity)
-                        ((PlayActivity) activity).onRecordState(-1);
-                }
-            }
-        };
-        mSurfaceView2.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-            @Override
-            public void onSurfaceTextureAvailable(SurfaceTexture surface, int i, int i1) {
-
-                mStreamRender2 = new EasyRTSPClient(PlaylistActivity.this, "79393674363536526D343041484339617064446A70655A76636D63755A57467A65575268636E64706269356C59584E356347786865575679567778576F502B6C34456468646D6C754A6B4A68596D397A595541794D4445325257467A65555268636E6470626C526C5957316C59584E35",
-                        new Surface(surface), mResultReceiver2);
-
-                boolean autoRecord = PreferenceManager.getDefaultSharedPreferences(PlaylistActivity.this).getBoolean("auto_record", false);
-
-                File f = new File(TheApp.sMoviePath);
-                f.mkdirs();
-
-                try {
-                    mStreamRender2.start(video2, 0, RTSPClient.EASY_SDK_VIDEO_FRAME_FLAG | RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG, "", "", autoRecord ?
-                            new File(f, new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()) + ".mp4").getPath() : null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(PlaylistActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                    return;
-                }
-//                sendResult(RESULT_REND_STARTED, null);
-            }
-
-            @Override
-            public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
-
-            }
-
-            @Override
-            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-                return false;
-            }
-
-            @Override
-            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
-
-            }
-        });
+//
+//        //添加第二个播放器
+//        mSurfaceView2 = (TextureView) findViewById(R.id.surface_view2);
+//        mSurfaceView2.setOpaque(false);
+//        mSurfaceView2.buildLayer();
+//        mResultReceiver2 = new ResultReceiver(new Handler()) {
+//            @Override
+//            protected void onReceiveResult(int resultCode, Bundle resultData) {
+//                super.onReceiveResult(resultCode, resultData);
+//                Activity activity = PlaylistActivity.this;
+//                if (activity == null) return;
+//                if (resultCode == EasyRTSPClient.RESULT_VIDEO_DISPLAYED) {
+//
+//                } else if (resultCode == EasyRTSPClient.RESULT_VIDEO_SIZE) {
+//
+//                } else if (resultCode == EasyRTSPClient.RESULT_TIMEOUT) {
+//                    new AlertDialog.Builder(activity).setMessage("时间到").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
+//                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_AUDIO) {
+//                    new AlertDialog.Builder(activity).setMessage("音频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
+//                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_VIDEO) {
+//                    new AlertDialog.Builder(activity).setMessage("视频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
+//                } else if (resultCode == EasyRTSPClient.RESULT_EVENT) {
+//
+//                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_BEGIN) {
+//                    if (activity instanceof PlayActivity)
+//                        ((PlayActivity) activity).onRecordState(1);
+//                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_END) {
+//                    if (activity instanceof PlayActivity)
+//                        ((PlayActivity) activity).onRecordState(-1);
+//                }
+//            }
+//        };
+//        mSurfaceView2.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+//            @Override
+//            public void onSurfaceTextureAvailable(SurfaceTexture surface, int i, int i1) {
+//
+//                mStreamRender2 = new EasyRTSPClient(PlaylistActivity.this, "79393674363536526D343041484339617064446A70655A76636D63755A57467A65575268636E64706269356C59584E356347786865575679567778576F502B6C34456468646D6C754A6B4A68596D397A595541794D4445325257467A65555268636E6470626C526C5957316C59584E35",
+//                        new Surface(surface), mResultReceiver2);
+//
+//                boolean autoRecord = PreferenceManager.getDefaultSharedPreferences(PlaylistActivity.this).getBoolean("auto_record", false);
+//
+//                File f = new File(TheApp.sMoviePath);
+//                f.mkdirs();
+//
+//                try {
+//                    mStreamRender2.start(video2, 0, RTSPClient.EASY_SDK_VIDEO_FRAME_FLAG | RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG, "", "", autoRecord ?
+//                            new File(f, new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()) + ".mp4").getPath() : null);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    Toast.makeText(PlaylistActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+//                    return;
+//                }
+////                sendResult(RESULT_REND_STARTED, null);
+//            }
+//
+//            @Override
+//            public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+//
+//            }
+//
+//            @Override
+//            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+//                return false;
+//            }
+//
+//            @Override
+//            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+//
+//            }
+//        });
 
 
         //初始化保存noticeId
@@ -325,9 +359,10 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 
     private void initId() {
 //        String url = "http://192.168.1.122:8080/";
-        String url = "http://172.18.31.222:8080/";
+//        String url = "http://172.18.31.222:8080/";
+//        String url = "http://192.168.1.222:8080/";
         com.loopj.android.http.AsyncHttpClient client = new com.loopj.android.http.AsyncHttpClient();
-        client.get(url, new JsonHttpResponseHandler() {
+        client.get(faceIp, new JsonHttpResponseHandler() {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -1030,7 +1065,6 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     protected void onDestroy() {
-        mCursor.close();
         super.onDestroy();
     }
 }
