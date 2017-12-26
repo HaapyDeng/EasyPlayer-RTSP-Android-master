@@ -243,77 +243,6 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 
             }
         });
-//
-//        //添加第二个播放器
-//        mSurfaceView2 = (TextureView) findViewById(R.id.surface_view2);
-//        mSurfaceView2.setOpaque(false);
-//        mSurfaceView2.buildLayer();
-//        mResultReceiver2 = new ResultReceiver(new Handler()) {
-//            @Override
-//            protected void onReceiveResult(int resultCode, Bundle resultData) {
-//                super.onReceiveResult(resultCode, resultData);
-//                Activity activity = PlaylistActivity.this;
-//                if (activity == null) return;
-//                if (resultCode == EasyRTSPClient.RESULT_VIDEO_DISPLAYED) {
-//
-//                } else if (resultCode == EasyRTSPClient.RESULT_VIDEO_SIZE) {
-//
-//                } else if (resultCode == EasyRTSPClient.RESULT_TIMEOUT) {
-//                    new AlertDialog.Builder(activity).setMessage("时间到").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
-//                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_AUDIO) {
-//                    new AlertDialog.Builder(activity).setMessage("音频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
-//                } else if (resultCode == EasyRTSPClient.RESULT_UNSUPPORTED_VIDEO) {
-//                    new AlertDialog.Builder(activity).setMessage("视频格式不支持").setTitle("SORRY").setPositiveButton(android.R.string.ok, null).show();
-//                } else if (resultCode == EasyRTSPClient.RESULT_EVENT) {
-//
-//                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_BEGIN) {
-//                    if (activity instanceof PlayActivity)
-//                        ((PlayActivity) activity).onRecordState(1);
-//                } else if (resultCode == EasyRTSPClient.RESULT_RECORD_END) {
-//                    if (activity instanceof PlayActivity)
-//                        ((PlayActivity) activity).onRecordState(-1);
-//                }
-//            }
-//        };
-//        mSurfaceView2.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-//            @Override
-//            public void onSurfaceTextureAvailable(SurfaceTexture surface, int i, int i1) {
-//
-//                mStreamRender2 = new EasyRTSPClient(PlaylistActivity.this, "79393674363536526D343041484339617064446A70655A76636D63755A57467A65575268636E64706269356C59584E356347786865575679567778576F502B6C34456468646D6C754A6B4A68596D397A595541794D4445325257467A65555268636E6470626C526C5957316C59584E35",
-//                        new Surface(surface), mResultReceiver2);
-//
-//                boolean autoRecord = PreferenceManager.getDefaultSharedPreferences(PlaylistActivity.this).getBoolean("auto_record", false);
-//
-//                File f = new File(TheApp.sMoviePath);
-//                f.mkdirs();
-//
-//                try {
-//                    mStreamRender2.start(video2, 0, RTSPClient.EASY_SDK_VIDEO_FRAME_FLAG | RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG, "", "", autoRecord ?
-//                            new File(f, new SimpleDateFormat("yy-MM-dd HH:mm:ss").format(new Date()) + ".mp4").getPath() : null);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    Toast.makeText(PlaylistActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-//                    return;
-//                }
-////                sendResult(RESULT_REND_STARTED, null);
-//            }
-//
-//            @Override
-//            public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
-//
-//            }
-//
-//            @Override
-//            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-//                return false;
-//            }
-//
-//            @Override
-//            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
-//
-//            }
-//        });
-
 
         //初始化保存noticeId
         SharedPreferences notice = getSharedPreferences("noticeId", MODE_PRIVATE);
@@ -322,14 +251,14 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
         edit.putString("id", "0");
         edit.commit();  //保存数据信息
 
-//
-//        img1 = (ImageView) findViewById(R.id.img1);
-//        name1 = (TextView) findViewById(R.id.name1);
-//        grade1 = (TextView) findViewById(R.id.grade1);
-//
-//        img2 = (ImageView) findViewById(R.id.img2);
-//        name2 = (TextView) findViewById(R.id.name2);
-//        grade2 = (TextView) findViewById(R.id.grade2);
+
+        img1 = (ImageView) findViewById(R.id.img1);
+        name1 = (TextView) findViewById(R.id.name1);
+        grade1 = (TextView) findViewById(R.id.grade1);
+
+        img2 = (ImageView) findViewById(R.id.img2);
+        name2 = (TextView) findViewById(R.id.name2);
+        grade2 = (TextView) findViewById(R.id.grade2);
 
         //studentId
         SharedPreferences sId = getSharedPreferences("studentId", MODE_PRIVATE);
@@ -487,6 +416,39 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
 //
                     popupWindowHelper.dismiss();
                     flag = flag + 1;
+                    switch (flag % 2) {
+                        case 1:
+                            LinearLayout ll_11 = (LinearLayout) findViewById(R.id.ll__11);
+                            ll_11.setVisibility(View.VISIBLE);
+                            if (userName.equals("校外人员")) {
+                                img1.setImageDrawable(getResources().getDrawable(R.drawable.img_moshengrenbiaoji));
+                                name1.setText(userName);
+                                grade1.setText("请勿擅自进入");
+                            } else {
+                                String sdDir2 = Environment.getExternalStorageDirectory().getPath();
+                                img1.setImageURI(Uri.fromFile(new File(sdDir2 + "/school/" + studentId + ".jpg")));
+                                name1.setText(userName);
+                                grade1.setText(userGrade + " · " + userClass);
+
+                            }
+                            break;
+                        case 0:
+                            LinearLayout ll_12 = (LinearLayout) findViewById(R.id.ll__12);
+                            ll_12.setVisibility(View.VISIBLE);
+                            if (userName.equals("校外人员")) {
+                                img2.setImageDrawable(getResources().getDrawable(R.drawable.img_moshengrenbiaoji));
+                                name2.setText(userName);
+                                grade2.setText("请勿擅自进入");
+                            } else {
+                                String sdDir2 = Environment.getExternalStorageDirectory().getPath();
+                                img2.setImageURI(Uri.fromFile(new File(sdDir2 + "/school/" + studentId + ".jpg")));
+                                name2.setText(userName);
+                                grade2.setText(userGrade + " · " + userClass);
+
+                            }
+                            break;
+                    }
+//
                     if (tag == 1) {
                         mHandler.sendEmptyMessageDelayed(12, 3000);
                     }
