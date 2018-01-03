@@ -27,7 +27,7 @@
         android:name="org.easydarwin.easyplayer.TheApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="智慧监控"
+        android:label="智慧监控(E单视频)"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:label">

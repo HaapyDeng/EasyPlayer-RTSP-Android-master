@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -129,6 +130,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
     String userGrade = "";
     String userClass = "";
     int flag = 0;
+    int dataflag1 = 0, dataflag2 = 0;
 
     //    String video1 = "rtsp://admin:Abcd1234@192.168.1.2:554";
 //    String video2 = "rtsp://admin:Abcd1234@192.168.1.3:554";
@@ -301,7 +303,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                     Log.d("id", id.toString());
                     if (id.length() == 0) {
 //                        new InitIdTimeThread().start();
-//                        mHandler.sendEmptyMessageDelayed(12, 5000);
+                        mHandler.sendEmptyMessageDelayed(12, 3000);
                     } else {
                         SharedPreferences getSId = getSharedPreferences("studentId", 0);
                         String sid = getSId.getString("id", "0");
@@ -312,7 +314,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                                 //保存数据信息
                                 if (sid.equals(studentId)) {
 //                                    new InitIdTimeThread().start();
-//                                    mHandler.sendEmptyMessageDelayed(12, 5000);
+                                    mHandler.sendEmptyMessageDelayed(12, 3000);
                                 } else {
                                     tag = 1;
                                     SharedPreferences sId2 = getSharedPreferences("studentId", MODE_PRIVATE);
@@ -384,7 +386,9 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                         TextView gradeText2 = popView.findViewById(R.id.grade);
                         userName = "校外人员";
                         nameText2.setText(userName);
+                        nameText2.setTextColor(Color.RED);
                         gradeText2.setText("请勿擅自进入");
+                        gradeText2.setTextColor(Color.RED);
                         mHandler.sendEmptyMessageDelayed(4, 3000);
 
                     } else {
@@ -424,11 +428,15 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                                 img1.setImageDrawable(getResources().getDrawable(R.drawable.img_moshengrenbiaoji));
                                 name1.setText(userName);
                                 grade1.setText("请勿擅自进入");
+                                name1.setTextColor(Color.RED);
+                                grade1.setTextColor(Color.RED);
                             } else {
                                 String sdDir2 = Environment.getExternalStorageDirectory().getPath();
                                 img1.setImageURI(Uri.fromFile(new File(sdDir2 + "/school/" + studentId + ".jpg")));
                                 name1.setText(userName);
+                                name1.setTextColor(Color.WHITE);
                                 grade1.setText(userGrade + " · " + userClass);
+                                grade1.setTextColor(Color.WHITE);
 
                             }
                             break;
@@ -439,11 +447,15 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
                                 img2.setImageDrawable(getResources().getDrawable(R.drawable.img_moshengrenbiaoji));
                                 name2.setText(userName);
                                 grade2.setText("请勿擅自进入");
+                                name2.setTextColor(Color.RED);
+                                grade2.setTextColor(Color.RED);
                             } else {
                                 String sdDir2 = Environment.getExternalStorageDirectory().getPath();
                                 img2.setImageURI(Uri.fromFile(new File(sdDir2 + "/school/" + studentId + ".jpg")));
                                 name2.setText(userName);
+                                name2.setTextColor(Color.WHITE);
                                 grade2.setText(userGrade + " · " + userClass);
+                                grade2.setTextColor(Color.WHITE);
 
                             }
                             break;
@@ -730,6 +742,11 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
      */
     private void initBarChart1() {
 
+        if (dataflag1 == 1) {
+            Log.d("view1","remove!!!");
+            customBarChart1.removeView(customBarChart1);
+        }
+
         String[] xLabel = {"0", "00:00", "", "", "", "", "", "07:00", "", "", "", "", "12:00", "",
                 "", "", "", "", "18:00", "", "", "", "22:00", "", ""};
         String[] yLabel = {"0", "0", "0", "0", "0", "0", "0", "0"};
@@ -747,6 +764,11 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
      * 初始化柱状图2数据
      */
     private void initBarChart2() {
+        if (dataflag2 == 1) {
+            Log.d("view2","remove!!!");
+            customBarChart2.removeView(customBarChart2);
+        }
+
         String[] xLabel = {"0", "00:00", "", "", "", "", "", "07:00", "", "", "", "", "12:00", "",
                 "", "", "", "", "18:00", "", "", "", "22:00", "", ""};
         String[] yLabel = {"0", "0", "0", "0", "0", "0", "0", "0"};
@@ -759,6 +781,7 @@ public class PlaylistActivity extends AppCompatActivity implements View.OnClickL
         color.add(R.color.color16);
         color.add(R.color.color16);
         customBarChart2.addView(new CustomBarChart(this, xLabel, yLabel, data, color));
+        dataflag2 = 1;
     }
 
     public String jsonMacData() {
